@@ -36,8 +36,8 @@ project-root/
 
 1. Clone the repository:
 
-```bash
-git clone <https://github.com/hamza-amjad10/Tweet-Sentiment-Analyzer.git>
+
+git clone https://github.com/hamza-amjad10/Tweet-Sentiment-Analyzer.git
 Create a virtual environment (recommended):
 
 
