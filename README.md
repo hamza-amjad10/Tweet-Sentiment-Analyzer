@@ -8,14 +8,14 @@ It predicts whether a tweet is **positive**, **negative**, or **neutral**, and a
 ## Folder Structure
 
 project-root/
-├── model/
-│ ├── model.pkl # Trained Random Forest classifier
-│ └── tfidf_vectorizer.pkl # Saved TF-IDF vectorizer
-├── model.py # Script to train and save the model
-├── web_app.py # Streamlit web app
-├── test.csv # Dataset for training/testing
-├── requirements.txt # Project dependencies
-└── README.md # Project documentation
+model/
+model.pkl # Trained Random Forest classifier
+tfidf_vectorizer.pkl # Saved TF-IDF vectorizer
+model.py # Script to train and save the model
+web_app.py # Streamlit web app
+test.csv # Dataset for training/testing
+requirements.txt # Project dependencies
+README.md # Project documentation
 
 
 
