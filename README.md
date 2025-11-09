@@ -8,14 +8,14 @@ It predicts whether a tweet is **positive**, **negative**, or **neutral**, and a
 ## Folder Structure
 
 project-root/
-model/
-model.pkl # Trained Random Forest classifier
-tfidf_vectorizer.pkl # Saved TF-IDF vectorizer
-model.py # Script to train and save the model
-web_app.py # Streamlit web app
-test.csv # Dataset for training/testing
-requirements.txt # Project dependencies
-README.md # Project documentation
+├── model/
+│ ├── model.pkl # Trained Random Forest classifier
+│ └── tfidf_vectorizer.pkl # Saved TF-IDF vectorizer
+├── model.py # Script to train and save the model
+├── web_app.py # Streamlit web app
+├── test.csv # Dataset for training/testing
+├── requirements.txt # Project dependencies
+└── README.md # Project documentation
 
 
 
@@ -42,7 +42,7 @@ Create a virtual environment (recommended):
 
 
 python -m venv env
-source env/bin/activate      # On Windows: env\Scripts\activate
+# On Windows: env\Scripts\activate
 Install dependencies:
 
 
@@ -79,18 +79,4 @@ See requirements.txt for the complete list of Python packages.
 
 License
 This project is open-source and available under the MIT License.
-
-pgsql
-Copy code
-
----
-
-I can also **add a section to show how to include screenshots in the README** if you want it to look more visual and professional on GitHub.  
-
-Do you want me to do that too?
-
-
-
-
-
 
