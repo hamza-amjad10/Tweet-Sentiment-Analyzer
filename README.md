@@ -1,4 +1,5 @@
 "# Tweet-Sentiment-Analyzer" 
+
 This project is a **Tweet Sentiment Analysis** web application built with **Python**, **Scikit-learn**, and **Streamlit**. 
 It predicts whether a tweet is **positive**, **negative**, or **neutral**, and also shows the **confidence score** of the prediction.  
 
