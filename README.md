@@ -1,82 +1,111 @@
-"# Tweet-Sentiment-Analyzer" 
+# Tweet Sentiment Analyzer
 
-This project is a **Tweet Sentiment Analysis** web application built with **Python**, **Scikit-learn**, and **Streamlit**. 
-It predicts whether a tweet is **positive**, **negative**, or **neutral**, and also shows the **confidence score** of the prediction.  
-
----
-
-## Folder Structure
-
-project-root/
-├── model/
-│ ├── model.pkl # Trained Random Forest classifier
-│ └── tfidf_vectorizer.pkl # Saved TF-IDF vectorizer
-├── model.py # Script to train and save the model
-├── web_app.py # Streamlit web app
-├── test.csv # Dataset for training/testing
-├── requirements.txt # Project dependencies
-└── README.md # Project documentation
-
-
+This Streamlit application classifies tweet sentiment with a trained random
+forest model. It reports positive, negative, or neutral sentiment and a
+confidence score.
 
 ## Features
 
-- Preprocess and clean tweet text automatically.
-- Predict sentiment as **positive**, **negative**, or **neutral**.
-- Show confidence score of predictions.
-- Interactive **Streamlit web interface**.
-- Visual feedback for predictions using colors and emojis:
-  - 🙂 Positive
-  - 😶 Neutral
-  - 😞 Negative
+- Clean and preprocess tweet text.
+- Predict one tweet in the Streamlit interface.
+- Analyze up to 500 rows from a CSV.
+- Recognize Xquik's `Tweet Text` export column automatically.
+- Download spreadsheet-safe predictions.
 
----
+## Project Structure
+
+```text
+project-root/
+├── model/
+│   ├── model.pkl
+│   └── tfidf vectorizer.pkl
+├── app_paths.py
+├── model.py
+├── requirements.in
+├── requirements.txt
+├── sentiment.py
+├── test.csv
+├── tests/
+├── web_app.py
+└── README.md
+```
+
+The application and training script share the same model paths. Retraining
+replaces both files inside `model/`, regardless of the current directory.
 
 ## Installation
 
-1. Clone the repository:
+Use Python 3.10 or newer.
 
+1. Clone the repository.
 
-git clone https://github.com/hamza-amjad10/Tweet-Sentiment-Analyzer.git
-Create a virtual environment (recommended):
+   ```bash
+   git clone https://github.com/hamza-amjad10/Tweet-Sentiment-Analyzer.git
+   cd Tweet-Sentiment-Analyzer
+   ```
 
+2. Create and activate a virtual environment.
 
-python -m venv env
-# On Windows: env\Scripts\activate
-Install dependencies:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate
+   ```
 
+   On Windows, run `.venv\Scripts\activate` instead.
 
-pip install -r requirements.txt
-Usage
-Train the model (optional, if you want to retrain):
+3. Install the dependencies and NLTK data.
 
+   ```bash
+   pip install -r requirements.txt
+   python -m nltk.downloader \
+     averaged_perceptron_tagger_eng punkt punkt_tab stopwords wordnet
+   ```
 
-python model.py
-Run the Streamlit web app:
+`requirements.in` lists direct dependencies. `requirements.txt` locks the full
+environment.
 
+## Usage
 
+Run the included model:
+
+```bash
 streamlit run web_app.py
-Enter your tweet in the text box and click Predict to see the sentiment and confidence.
+```
 
-Example
-Tweet:
+Enter a tweet and select **Predict**.
 
-I just got a promotion at work! Feeling ecstatic and motivated to achieve even more!
-Output:
+To retrain the model first:
 
-Model predicts the tweet is: positive 🙂
-Confidence: 67%
+```bash
+python model.py
+```
 
-Pre-trained Models
-The pre-trained models are stored in the model/ folder:
+## Xquik Batch CSV Flow
 
-model.pkl → Random Forest classifier
+1. Create a tweet extraction at [Xquik](https://xquik.com).
+2. Export the extraction as CSV.
+3. Upload the file under **Batch CSV Prediction**.
+4. Confirm the automatically selected `Tweet Text` column.
+5. Analyze the rows and download the predictions.
 
-tfidf_vectorizer.pkl → TF-IDF vectorizer for feature extraction
+The upload limit is 10 MB and 500 data rows. The application treats uploaded
+content as untrusted. It neutralizes spreadsheet formulas in downloaded tweet
+values.
 
-Dependencies
-See requirements.txt for the complete list of Python packages.
+The application reads the uploaded CSV for the current Streamlit session. It
+does not send API requests to Xquik. Creating an export may require an API key,
+subscription, or credits. Confirm current costs before use.
 
-License
-This project is open-source and available under the MIT License.
+Xquik is an independent third-party service. Not affiliated with X Corp.
+"Twitter" and "X" are trademarks of X Corp.
 
+## Tests
+
+```bash
+python -m unittest discover -s tests -v
+python -m py_compile app_paths.py sentiment.py model.py web_app.py
+```
+
+## License
+
+This project describes itself as open source under the MIT License.
