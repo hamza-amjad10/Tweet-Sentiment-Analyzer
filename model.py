@@ -1,141 +1,63 @@
-import pandas as pd
-import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import TfidfVectorizer
-import string
-import re
-import nltk
-from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
-from nltk.corpus import wordnet
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report,accuracy_score,confusion_matrix
+from pathlib import Path
+from typing import cast
+
 import joblib
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.model_selection import train_test_split
+
+from app_paths import DATASET_PATH, MODEL_PATH, VECTORIZER_PATH
+from sentiment import clean_text
 
 
+def train_model() -> tuple[TfidfVectorizer, RandomForestClassifier]:
+    data = pd.read_csv(DATASET_PATH, encoding="latin1")[["text", "sentiment"]]
+    data.dropna(inplace=True)
+    text = cast(pd.Series, data["text"]).apply(clean_text)
+    labels = cast(pd.Series, data["sentiment"]).map(
+        {"positive": 1, "negative": 2, "neutral": 0}
+    )
+
+    training_text, test_text, training_labels, test_labels = train_test_split(
+        text,
+        labels,
+        test_size=0.2,
+        random_state=42,
+    )
+
+    vectorizer = TfidfVectorizer()
+    vectorizer.fit(training_text)
+    training_vectors = vectorizer.transform(training_text)
+    test_vectors = vectorizer.transform(test_text)
+
+    model = RandomForestClassifier(random_state=42)
+    model.fit(training_vectors, training_labels)
+    predictions = model.predict(test_vectors)
+
+    print("Confusion matrix:", confusion_matrix(test_labels, predictions))
+    print("Classification report:", classification_report(test_labels, predictions))
+    print("Accuracy score:", accuracy_score(test_labels, predictions))
+    return vectorizer, model
 
 
-df=pd.read_csv("test.csv",usecols=["text","sentiment"], encoding='latin1')
-# print(df.head())
+def save_artifacts(
+    vectorizer: TfidfVectorizer,
+    model: RandomForestClassifier,
+    vectorizer_path: Path = VECTORIZER_PATH,
+    model_path: Path = MODEL_PATH,
+) -> None:
+    vectorizer_path.parent.mkdir(parents=True, exist_ok=True)
+    model_path.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump(vectorizer, vectorizer_path)
+    joblib.dump(model, model_path)
 
 
-# Filling missing sentiment with mode would bias the model toward the most frequent class.
-# Filling missing text with a placeholder adds fake text, which confuses NLP models.
-
-df.dropna(inplace=True)
-# print(df.drop_duplicates(inplace=True))
-# print(df.duplicated().sum())
+def main() -> None:
+    vectorizer, model = train_model()
+    save_artifacts(vectorizer, model)
 
 
-
-# now make text cleaning function 
-
-def text_cleaning(text):
-   main_text=text.lower()
-   tokens=word_tokenize(main_text)
-   # nltk.download("stopwords")
-   stopwards_check=set(stopwords.words("english"))
-   remove_stopwords=[w for w in tokens if w not in stopwards_check]
-   # print(remove_stopwords)
-   remove_punctuations=[w for w in remove_stopwords if w not in string.punctuation]
-   # print(remove_punctuations)
-   remove_punctuation=" ".join(remove_punctuations)
-   remove_numbers=re.sub('\d+'," ",remove_punctuation)
-   # print(remove_numbers)
-   remove_spaces=re.sub('\s+'," ",remove_numbers) 
-   # print(remove_spaces)
-   remove_specials=re.sub(r'[^\x00-\x7F]+'," ",remove_spaces)
-   # print(remove_specials)
-   remove_tags=re.sub('<.*?>',"",remove_specials)
-   # print(remove_tags)
-   clean_text = re.sub(r'http\s*//\S+|www\S+', ' ', remove_tags)
-   lemmi=WordNetLemmatizer()
-   # nltk.download("averaged_preceptron_tagger")
-   # nltk.download('wordnet')
-   original_tokens=word_tokenize(clean_text)
-   pos_tags=nltk.pos_tag(original_tokens)
-   def convert_wordnet_pos(words):
-         if words.startswith("J"):
-          return wordnet.ADJ
-         elif words.startswith("V"):
-          return wordnet.VERB
-         elif words.startswith("N"):
-          return wordnet.NOUN
-         elif words.startswith("R"):
-          return wordnet.ADV
-         else:
-          return wordnet.NOUN
-      
-   new_list = []
- 
-   for word,pos in pos_tags:
-       pos_single_tag=convert_wordnet_pos(pos)
-       lematized_words=lemmi.lemmatize(word,pos=pos_single_tag)
-       new_list.append(lematized_words)
- 
-   return " ".join(new_list)
-
-
-df["text"]=df["text"].apply(text_cleaning)
-
-df["sentiment"]=df["sentiment"].map({"positive":1,"negative":2,"neutral":0})
-
-
-# now do train test split
-
-X=df["text"]
-Y=df["sentiment"]
-
-X_train,X_test,Y_train,Y_test=train_test_split(X,Y,test_size=0.2,random_state=42)
-
-
-
-vectorizer=TfidfVectorizer()
-
-vectorizer.fit(X_train)
-
-
-X_train_vector=vectorizer.transform(X_train)
-X_test_vector=vectorizer.transform(X_test)
-
-
-    
-lr=RandomForestClassifier(random_state=42)
-
-
-lr.fit(X_train_vector,Y_train)
-
-y_predict=lr.predict(X_test_vector)
-
-
-joblib.dump(vectorizer,"tfidf vectorizer.pkl")
-joblib.dump(lr,"model.pkl")
-
-
-
-print(f"Confusion matrix is: ",confusion_matrix(Y_test,y_predict))
-print(f"Classification report is: ",classification_report(Y_test,y_predict))
-print(f"accuracy score is: ",accuracy_score(Y_test,y_predict))
-
-
-
-
-# random forest result
-# Confusion matrix is:  [[214  37  35]
-#  [ 61 147   6]
-#  [ 78  18 111]]
-# Classification report is:                precision    recall  f1-score   support
-
-#            0       0.61      0.75      0.67       286
-#            1       0.73      0.69      0.71       214
-#            2       0.73      0.54      0.62       207
-
-#     accuracy                           0.67       707
-#    macro avg       0.69      0.66      0.66       707
-# weighted avg       0.68      0.67      0.67       707
-
-# accuracy score is:  0.6676096181046676
-
-
-
+if __name__ == "__main__":
+    main()
